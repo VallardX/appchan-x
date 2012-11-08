@@ -589,171 +589,175 @@ Options =
       keys = Object.keys(userMascots)
       keys.sort()
 
-      if mode == 'default'
-        # Create a keyed Unordered List Element and hide option for each mascot category.
-        for category in MascotTools.categories
-          ul[category] = $.el "ul",
+      try
+        if mode == 'default'
+          # Create a keyed Unordered List Element and hide option for each mascot category.
+          for category in MascotTools.categories
+            ul[category] = $.el "ul",
+              className:   "mascots"
+              id:          category
+  
+            if Conf["Hidden Categories"].contains category
+              ul[category].hidden = true
+  
+            header = $.el "h3"
+              className:   "mascotHeader"
+              textContent: category
+  
+            option = $.el "label"
+              name:     category
+              innerHTML: "<input name='#{category}' type=checkbox #{if Conf["Hidden Categories"].contains(category) then 'checked' else ''}>#{category}"
+  
+            $.on $('input', option), 'change', ->
+              Options.mascotTab.toggle @
+  
+            $.add ul[category], header
+            $.add suboptions, ul[category]
+            $.add $('div', mascotHide), option
+  
+          for name in keys
+            unless Conf["Deleted Mascots"].contains name
+              mascot = userMascots[name]
+              li = $.el 'li',
+                className: 'mascot'
+                innerHTML: "
+  <div id='#{name}' class='#{mascot.category}'><img class=mascotimg src='#{if Array.isArray(mascot.image) then (if userThemes[Conf['theme']]['Dark Theme'] then mascot.image[0] else mascot.image[1]) else mascot.image}'></div>
+  <div class='mascotmetadata'>
+    <p><span class='mascotname'>#{name.replace /_/g, " "}</span></p>
+    <p><span class='mascotoptions'><a class=edit name='#{name}' href='javascript:;'>Edit</a> / <a class=delete name='#{name}' href='javascript:;'>Delete</a> / <a class=export name='#{name}' href='javascript:;'>Export</a></span></p>
+  </div>
+    "
+              div = $("##{name}", li)
+              if Conf[g.MASCOTSTRING].contains name
+                $.addClass li, 'enabled'
+  
+              $.on $('a.edit', li), 'click', ->
+                MascotTools.dialog @name
+                Options.close()
+  
+              $.on $('a.delete', li), 'click', ->
+                container = @.parentElement.parentElement.parentElement.parentElement
+                if confirm "Are you sure you want to delete \"#{@name}\"?"
+                  for type in ["Enabled Mascots", "Enabled Mascots sfw", "Enabled Mascots nsfw"]
+                    Conf[type].remove @name
+                    $.set type, Conf[type]
+                  Conf["Deleted Mascots"].push @name
+                  $.set "Deleted Mascots", Conf["Deleted Mascots"]
+                  $.rm container
+  
+              # Mascot Exporting
+              $.on $('a.export', li), 'click', ->
+                exportMascot = userMascots[@.name]
+                exportMascot['Mascot'] = @.name
+                exportedMascot = "data:application/json," + encodeURIComponent(JSON.stringify(exportMascot))
+  
+                if window.open exportedMascot, "_blank"
+                  return
+                else if confirm "Your popup blocker is preventing Appchan X from exporting this theme. Would you like to open the exported theme in this window?"
+                  window.location exportedMascot
+  
+              $.on div, 'click', ->
+                if Conf[g.MASCOTSTRING].remove @id
+                  $.rmClass @.parentElement, 'enabled'
+                else
+                  $.addClass @.parentElement, 'enabled'
+                  Conf[g.MASCOTSTRING].push @id
+                $.set "Enabled Mascots", Conf["Enabled Mascots"]
+  
+              if MascotTools.categories.contains mascot.category
+                $.add ul[mascot.category], li
+              else
+                $.add ul[MascotTools.categories[0]], li
+  
+          batchmascots = $.el 'div',
+            id:        "mascots_batch"
+            innerHTML: "
+    <a href=\"javascript:;\" id=clear>Clear All</a> /
+     <a href=\"javascript:;\" id=selectAll>Select All</a> /
+     <a href=\"javascript:;\" id=createNew>Add Mascot</a> /
+     <a href=\"javascript:;\" id=importMascot>Import Mascot</a><input id=importMascotButton type=file hidden> /
+     <a href=\"javascript:;\" id=undelete>Undelete Mascots</a>
+    "
+  
+          $.on $('#clear', batchmascots), 'click', ->
+            enabledMascots = JSON.parse(JSON.stringify(Conf[g.MASCOTSTRING]))
+            for name in enabledMascots
+              $.rmClass $.id(name).parentElement, 'enabled'
+              Conf[g.MASCOTSTRING].remove name
+            $.set g.MASCOTSTRING, Conf[g.MASCOTSTRING]
+  
+          $.on $('#selectAll', batchmascots), 'click', ->
+            for name, mascot of userMascots
+              unless Conf["Hidden Categories"].contains(mascot.category) or Conf[g.MASCOTSTRING].contains(name) or Conf["Deleted Mascots"].contains(name)
+                $.addClass $.id(name).parentElement, 'enabled'
+                Conf[g.MASCOTSTRING].push name
+            $.set g.MASCOTSTRING, Conf[g.MASCOTSTRING]
+  
+          $.on $('#createNew', batchmascots), 'click', ->
+            MascotTools.dialog()
+            Options.close()
+  
+          $.on $("#importMascot", batchmascots), 'click', ->
+            @.nextSibling.click()
+  
+          $.on $("#importMascotButton", batchmascots), 'change', (evt) ->
+            MascotTools.importMascot evt
+  
+          $.on $('#undelete', batchmascots), 'click', ->
+            unless Conf["Deleted Mascots"].length > 0
+              alert "No mascots have been deleted."
+              return
+            $.rm $("#mascotContainer", d.body)
+            Options.mascotTab.dialog Options.el, 'undelete'
+  
+        else
+          ul = $.el "ul",
             className:   "mascots"
             id:          category
+  
+          for name in keys
+            if Conf["Deleted Mascots"].contains name
+              mascot = userMascots[name]
+              li = $.el 'li',
+                className: 'mascot'
+                innerHTML: "
+  <div id='#{name}' class='#{mascot.category}'><img class=mascotimg src='#{if Array.isArray(mascot.image) then (if userThemes[Conf['theme']]['Dark Theme'] then mascot.image[0] else mascot.image[1]) else mascot.image}'></div>
+  <div class='mascotmetadata'>
+    <p><span class='mascotname'>#{name.replace /_/g, " "}</span></p>
+  </div>
+    "
+              div = $('div', li)
+  
+              $.on div, 'click', ->
+                container = @.parentElement
+                if confirm "Are you sure you want to undelete \"#{@id}\"?"
+                  Conf["Deleted Mascots"].remove @id
+                  $.set "Deleted Mascots", Conf["Deleted Mascots"]
+                  $.rm container
+  
+              $.add ul, li
+  
+          $.add suboptions, ul
+  
+          batchmascots = $.el 'div',
+            id:        "mascots_batch"
+            innerHTML: "<a href=\"javascript:;\" id=\"return\">Return</a>"
+  
+          $.on $('#return', batchmascots), 'click', ->
+            $.rm $("#mascotContainer", d.body)
+            Options.mascotTab.dialog()
+  
+        $.add parentdiv, suboptions
+        $.add parentdiv, batchmascots
+        $.add parentdiv, mascotHide
+  
+        Style.rice parentdiv
+  
+        $.add $('#mascot_tab + div', dialog), parentdiv
+        Options.indicators dialog
 
-          if Conf["Hidden Categories"].contains category
-            ul[category].hidden = true
-
-          header = $.el "h3"
-            className:   "mascotHeader"
-            textContent: category
-
-          option = $.el "label"
-            name:     category
-            innerHTML: "<input name='#{category}' type=checkbox #{if Conf["Hidden Categories"].contains(category) then 'checked' else ''}>#{category}"
-
-          $.on $('input', option), 'change', ->
-            Options.mascotTab.toggle @
-
-          $.add ul[category], header
-          $.add suboptions, ul[category]
-          $.add $('div', mascotHide), option
-
-        for name in keys
-          unless Conf["Deleted Mascots"].contains name
-            mascot = userMascots[name]
-            li = $.el 'li',
-              className: 'mascot'
-              innerHTML: "
-<div id='#{name}' class='#{mascot.category}'><img class=mascotimg src='#{if Array.isArray(mascot.image) then (if userThemes[Conf['theme']]['Dark Theme'] then mascot.image[0] else mascot.image[1]) else mascot.image}'></div>
-<div class='mascotmetadata'>
-  <p><span class='mascotname'>#{name.replace /_/g, " "}</span></p>
-  <p><span class='mascotoptions'><a class=edit name='#{name}' href='javascript:;'>Edit</a> / <a class=delete name='#{name}' href='javascript:;'>Delete</a> / <a class=export name='#{name}' href='javascript:;'>Export</a></span></p>
-</div>
-  "
-            div = $("##{name}", li)
-            if Conf[g.MASCOTSTRING].contains name
-              $.addClass li, 'enabled'
-
-            $.on $('a.edit', li), 'click', ->
-              MascotTools.dialog @name
-              Options.close()
-
-            $.on $('a.delete', li), 'click', ->
-              container = @.parentElement.parentElement.parentElement.parentElement
-              if confirm "Are you sure you want to delete \"#{@name}\"?"
-                for type in ["Enabled Mascots", "Enabled Mascots sfw", "Enabled Mascots nsfw"]
-                  Conf[type].remove @name
-                  $.set type, Conf[type]
-                Conf["Deleted Mascots"].push @name
-                $.set "Deleted Mascots", Conf["Deleted Mascots"]
-                $.rm container
-
-            # Mascot Exporting
-            $.on $('a.export', li), 'click', ->
-              exportMascot = userMascots[@.name]
-              exportMascot['Mascot'] = @.name
-              exportedMascot = "data:application/json," + encodeURIComponent(JSON.stringify(exportMascot))
-
-              if window.open exportedMascot, "_blank"
-                return
-              else if confirm "Your popup blocker is preventing Appchan X from exporting this theme. Would you like to open the exported theme in this window?"
-                window.location exportedMascot
-
-            $.on div, 'click', ->
-              if Conf[g.MASCOTSTRING].remove @id
-                $.rmClass @.parentElement, 'enabled'
-              else
-                $.addClass @.parentElement, 'enabled'
-                Conf[g.MASCOTSTRING].push @id
-              $.set "Enabled Mascots", Conf["Enabled Mascots"]
-
-            if MascotTools.categories.contains mascot.category
-              $.add ul[mascot.category], li
-            else
-              $.add ul[MascotTools.categories[0]], li
-
-        batchmascots = $.el 'div',
-          id:        "mascots_batch"
-          innerHTML: "
-  <a href=\"javascript:;\" id=clear>Clear All</a> /
-   <a href=\"javascript:;\" id=selectAll>Select All</a> /
-   <a href=\"javascript:;\" id=createNew>Add Mascot</a> /
-   <a href=\"javascript:;\" id=importMascot>Import Mascot</a><input id=importMascotButton type=file hidden> /
-   <a href=\"javascript:;\" id=undelete>Undelete Mascots</a>
-  "
-
-        $.on $('#clear', batchmascots), 'click', ->
-          enabledMascots = JSON.parse(JSON.stringify(Conf[g.MASCOTSTRING]))
-          for name in enabledMascots
-            $.rmClass $.id(name).parentElement, 'enabled'
-            Conf[g.MASCOTSTRING].remove name
-          $.set g.MASCOTSTRING, Conf[g.MASCOTSTRING]
-
-        $.on $('#selectAll', batchmascots), 'click', ->
-          for name, mascot of userMascots
-            unless Conf["Hidden Categories"].contains(mascot.category) or Conf[g.MASCOTSTRING].contains(name) or Conf["Deleted Mascots"].contains(name)
-              $.addClass $.id(name).parentElement, 'enabled'
-              Conf[g.MASCOTSTRING].push name
-          $.set g.MASCOTSTRING, Conf[g.MASCOTSTRING]
-
-        $.on $('#createNew', batchmascots), 'click', ->
-          MascotTools.dialog()
-          Options.close()
-
-        $.on $("#importMascot", batchmascots), 'click', ->
-          @.nextSibling.click()
-
-        $.on $("#importMascotButton", batchmascots), 'change', (evt) ->
-          MascotTools.importMascot evt
-
-        $.on $('#undelete', batchmascots), 'click', ->
-          unless Conf["Deleted Mascots"].length > 0
-            alert "No mascots have been deleted."
-            return
-          $.rm $("#mascotContainer", d.body)
-          Options.mascotTab.dialog Options.el, 'undelete'
-
-      else
-        ul = $.el "ul",
-          className:   "mascots"
-          id:          category
-
-        for name in keys
-          if Conf["Deleted Mascots"].contains name
-            mascot = userMascots[name]
-            li = $.el 'li',
-              className: 'mascot'
-              innerHTML: "
-<div id='#{name}' class='#{mascot.category}'><img class=mascotimg src='#{if Array.isArray(mascot.image) then (if userThemes[Conf['theme']]['Dark Theme'] then mascot.image[0] else mascot.image[1]) else mascot.image}'></div>
-<div class='mascotmetadata'>
-  <p><span class='mascotname'>#{name.replace /_/g, " "}</span></p>
-</div>
-  "
-            div = $('div', li)
-
-            $.on div, 'click', ->
-              container = @.parentElement
-              if confirm "Are you sure you want to undelete \"#{@id}\"?"
-                Conf["Deleted Mascots"].remove @id
-                $.set "Deleted Mascots", Conf["Deleted Mascots"]
-                $.rm container
-
-            $.add ul, li
-
-        $.add suboptions, ul
-
-        batchmascots = $.el 'div',
-          id:        "mascots_batch"
-          innerHTML: "<a href=\"javascript:;\" id=\"return\">Return</a>"
-
-        $.on $('#return', batchmascots), 'click', ->
-          $.rm $("#mascotContainer", d.body)
-          Options.mascotTab.dialog()
-
-      $.add parentdiv, suboptions
-      $.add parentdiv, batchmascots
-      $.add parentdiv, mascotHide
-
-      Style.rice parentdiv
-
-      $.add $('#mascot_tab + div', dialog), parentdiv
-      Options.indicators dialog
+      catch err
+        alert "AppChan X has experienced an error. You can help by sending this snippet to:\nhttps://github.com/zixaphir/appchan-x/issues\n\n#{Main.version}\n#{window.location}\n#{navigator.userAgent}\n\n#{err}\n\n#{mascot}\n\n#{err.stack}"
 
     toggle: (el) ->
       name = el.name

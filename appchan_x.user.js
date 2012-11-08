@@ -24,7 +24,7 @@
 // ==/UserScript==
 
 /*
- *  appchan x - Version 1.0.14 - 2012-11-07
+ *  appchan x - Version 1.0.14 - 2012-11-08
  *
  *  Licensed under the MIT license.
  *  https://github.com/zixaphir/appchan-x/blob/master/LICENSE
@@ -278,13 +278,27 @@
         'Hide Horizontal Rules': [false, 'Hides lines between threads.'],
         'Images Overlap Post Form': [true, 'Images expand over the post form and sidebar content, usually used with "Expand images" set to "full".']
       },
+      Aesthetics: {
+        'Block Ads': [false, 'Block advertisements. It\'s probably better to use AdBlock for this.'],
+        'Sidebar Glow': [false, 'Adds a glow to the sidebar\'s text.'],
+        'Checkboxes': ['show', 'Alter checkboxes.', ['show', 'make checkboxes circular', 'hide', 'do not style checkboxes']],
+        'Emoji': ['enabled', 'Enable emoji', ['enabled', 'disable ponies', 'only ponies', 'disable']],
+        'Emoji Position': ['before', 'Position of emoji icons, like sega and neko.', ['before', 'after']],
+        'Font': ['Helvetica', 'The font used by all elements of 4chan.', 'text'],
+        'Font Size': ['12', 'The font size of posts and various UI. This changes most, but not all, font sizes.', 'text'],
+        'Icons': ['oneechan', 'Icon theme which Appchan will use.', ['oneechan', '4chan SS']],
+        'Quote Shadows': [true, 'Add shadows to the quote previews and inline quotes.'],
+        'Rounded Edges': [false, 'Round the edges of various 4chan elements.'],
+        'Slideout Transitions': [true, 'Animate slideouts.'],
+        'Underline Links': [false, 'Put lines under hyperlinks.'],
+        'NSFW/SFW Themes': [false, 'Choose your theme based on the SFW status of the board you are viewing.']
+      },
       Mascots: {
         'Mascots': [true, 'Add a pretty picture of your waifu to Appchan.'],
         'Mascot Location': ['sidebar', 'Change where your mascot is located.', ['sidebar', 'opposite']],
         'Mascot Position': ['bottom', 'Change where your mascot is placed in relation to the post form if the mascot isn\'t manually placed.', ['above post form', 'bottom']],
         'Mascots Overlap Posts': [true, 'Mascots overlap threads and posts.'],
-        'NSFW/SFW Mascots': [false, 'Enable or disable mascots based on the SFW status of the board you are viewing.'],
-        'NSFW/SFW Themes': [false, 'Choose your theme based on the SFW status of the board you are viewing.']
+        'NSFW/SFW Mascots': [false, 'Enable or disable mascots based on the SFW status of the board you are viewing.']
       },
       Navigation: {
         'Boards Navigation': ['sticky top', 'The position of 4chan board navigation', ['sticky top', 'sticky bottom', 'top', 'hide']],
@@ -299,20 +313,6 @@
         'Compact Post Form Inputs': [true, 'Use compact inputs on the post form.'],
         'Textarea Resize': ['vertical', 'Options to resize the post form\'s comment box.', ['both', 'horizontal', 'vertical', 'none', 'auto-expand']],
         'Tripcode Hider': [true, 'Intelligent name field hiding.']
-      },
-      Aesthetics: {
-        'Block Ads': [false, 'Block advertisements. It\'s probably better to use AdBlock for this.'],
-        'Sidebar Glow': [false, 'Adds a glow to the sidebar\'s text.'],
-        'Checkboxes': ['show', 'Alter checkboxes.', ['show', 'make checkboxes circular', 'hide', 'do not style checkboxes']],
-        'Emoji': ['enabled', 'Enable emoji', ['enabled', 'disable ponies', 'only ponies', 'disable']],
-        'Emoji Position': ['before', 'Position of emoji icons, like sega and neko.', ['before', 'after']],
-        'Font': ['Helvetica', 'The font used by all elements of 4chan.', 'text'],
-        'Font Size': ['12', 'The font size of posts and various UI. This changes most, but not all, font sizes.', 'text'],
-        'Icons': ['oneechan', 'Icon theme which Appchan will use.', ['oneechan', '4chan SS']],
-        'Quote Shadows': [true, 'Add shadows to the quote previews and inline quotes.'],
-        'Rounded Edges': [false, 'Round the edges of various 4chan elements.'],
-        'Slideout Transitions': [true, 'Animate slideouts.'],
-        'Underline Links': [false, 'Put lines under hyperlinks.']
       }
     },
     theme: 'Yotsuba B',
@@ -3301,174 +3301,178 @@
         });
         keys = Object.keys(userMascots);
         keys.sort();
-        if (mode === 'default') {
-          _ref = MascotTools.categories;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            category = _ref[_i];
-            ul[category] = $.el("ul", {
+        try {
+          if (mode === 'default') {
+            _ref = MascotTools.categories;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              category = _ref[_i];
+              ul[category] = $.el("ul", {
+                className: "mascots",
+                id: category
+              });
+              if (Conf["Hidden Categories"].contains(category)) {
+                ul[category].hidden = true;
+              }
+              header = $.el("h3", {
+                className: "mascotHeader",
+                textContent: category
+              });
+              option = $.el("label", {
+                name: category,
+                innerHTML: "<input name='" + category + "' type=checkbox " + (Conf["Hidden Categories"].contains(category) ? 'checked' : '') + ">" + category
+              });
+              $.on($('input', option), 'change', function() {
+                return Options.mascotTab.toggle(this);
+              });
+              $.add(ul[category], header);
+              $.add(suboptions, ul[category]);
+              $.add($('div', mascotHide), option);
+            }
+            for (_j = 0, _len1 = keys.length; _j < _len1; _j++) {
+              name = keys[_j];
+              if (!Conf["Deleted Mascots"].contains(name)) {
+                mascot = userMascots[name];
+                li = $.el('li', {
+                  className: 'mascot',
+                  innerHTML: "  <div id='" + name + "' class='" + mascot.category + "'><img class=mascotimg src='" + (Array.isArray(mascot.image) ? (userThemes[Conf['theme']]['Dark Theme'] ? mascot.image[0] : mascot.image[1]) : mascot.image) + "'></div>  <div class='mascotmetadata'>    <p><span class='mascotname'>" + (name.replace(/_/g, " ")) + "</span></p>    <p><span class='mascotoptions'><a class=edit name='" + name + "' href='javascript:;'>Edit</a> / <a class=delete name='" + name + "' href='javascript:;'>Delete</a> / <a class=export name='" + name + "' href='javascript:;'>Export</a></span></p>  </div>    "
+                });
+                div = $("#" + name, li);
+                if (Conf[g.MASCOTSTRING].contains(name)) {
+                  $.addClass(li, 'enabled');
+                }
+                $.on($('a.edit', li), 'click', function() {
+                  MascotTools.dialog(this.name);
+                  return Options.close();
+                });
+                $.on($('a.delete', li), 'click', function() {
+                  var container, type, _k, _len2, _ref1;
+                  container = this.parentElement.parentElement.parentElement.parentElement;
+                  if (confirm("Are you sure you want to delete \"" + this.name + "\"?")) {
+                    _ref1 = ["Enabled Mascots", "Enabled Mascots sfw", "Enabled Mascots nsfw"];
+                    for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+                      type = _ref1[_k];
+                      Conf[type].remove(this.name);
+                      $.set(type, Conf[type]);
+                    }
+                    Conf["Deleted Mascots"].push(this.name);
+                    $.set("Deleted Mascots", Conf["Deleted Mascots"]);
+                    return $.rm(container);
+                  }
+                });
+                $.on($('a.export', li), 'click', function() {
+                  var exportMascot, exportedMascot;
+                  exportMascot = userMascots[this.name];
+                  exportMascot['Mascot'] = this.name;
+                  exportedMascot = "data:application/json," + encodeURIComponent(JSON.stringify(exportMascot));
+                  if (window.open(exportedMascot, "_blank")) {
+
+                  } else if (confirm("Your popup blocker is preventing Appchan X from exporting this theme. Would you like to open the exported theme in this window?")) {
+                    return window.location(exportedMascot);
+                  }
+                });
+                $.on(div, 'click', function() {
+                  if (Conf[g.MASCOTSTRING].remove(this.id)) {
+                    $.rmClass(this.parentElement, 'enabled');
+                  } else {
+                    $.addClass(this.parentElement, 'enabled');
+                    Conf[g.MASCOTSTRING].push(this.id);
+                  }
+                  return $.set("Enabled Mascots", Conf["Enabled Mascots"]);
+                });
+                if (MascotTools.categories.contains(mascot.category)) {
+                  $.add(ul[mascot.category], li);
+                } else {
+                  $.add(ul[MascotTools.categories[0]], li);
+                }
+              }
+            }
+            batchmascots = $.el('div', {
+              id: "mascots_batch",
+              innerHTML: "    <a href=\"javascript:;\" id=clear>Clear All</a> /     <a href=\"javascript:;\" id=selectAll>Select All</a> /     <a href=\"javascript:;\" id=createNew>Add Mascot</a> /     <a href=\"javascript:;\" id=importMascot>Import Mascot</a><input id=importMascotButton type=file hidden> /     <a href=\"javascript:;\" id=undelete>Undelete Mascots</a>    "
+            });
+            $.on($('#clear', batchmascots), 'click', function() {
+              var enabledMascots, _k, _len2;
+              enabledMascots = JSON.parse(JSON.stringify(Conf[g.MASCOTSTRING]));
+              for (_k = 0, _len2 = enabledMascots.length; _k < _len2; _k++) {
+                name = enabledMascots[_k];
+                $.rmClass($.id(name).parentElement, 'enabled');
+                Conf[g.MASCOTSTRING].remove(name);
+              }
+              return $.set(g.MASCOTSTRING, Conf[g.MASCOTSTRING]);
+            });
+            $.on($('#selectAll', batchmascots), 'click', function() {
+              for (name in userMascots) {
+                mascot = userMascots[name];
+                if (!(Conf["Hidden Categories"].contains(mascot.category) || Conf[g.MASCOTSTRING].contains(name) || Conf["Deleted Mascots"].contains(name))) {
+                  $.addClass($.id(name).parentElement, 'enabled');
+                  Conf[g.MASCOTSTRING].push(name);
+                }
+              }
+              return $.set(g.MASCOTSTRING, Conf[g.MASCOTSTRING]);
+            });
+            $.on($('#createNew', batchmascots), 'click', function() {
+              MascotTools.dialog();
+              return Options.close();
+            });
+            $.on($("#importMascot", batchmascots), 'click', function() {
+              return this.nextSibling.click();
+            });
+            $.on($("#importMascotButton", batchmascots), 'change', function(evt) {
+              return MascotTools.importMascot(evt);
+            });
+            $.on($('#undelete', batchmascots), 'click', function() {
+              if (!(Conf["Deleted Mascots"].length > 0)) {
+                alert("No mascots have been deleted.");
+                return;
+              }
+              $.rm($("#mascotContainer", d.body));
+              return Options.mascotTab.dialog(Options.el, 'undelete');
+            });
+          } else {
+            ul = $.el("ul", {
               className: "mascots",
               id: category
             });
-            if (Conf["Hidden Categories"].contains(category)) {
-              ul[category].hidden = true;
-            }
-            header = $.el("h3", {
-              className: "mascotHeader",
-              textContent: category
-            });
-            option = $.el("label", {
-              name: category,
-              innerHTML: "<input name='" + category + "' type=checkbox " + (Conf["Hidden Categories"].contains(category) ? 'checked' : '') + ">" + category
-            });
-            $.on($('input', option), 'change', function() {
-              return Options.mascotTab.toggle(this);
-            });
-            $.add(ul[category], header);
-            $.add(suboptions, ul[category]);
-            $.add($('div', mascotHide), option);
-          }
-          for (_j = 0, _len1 = keys.length; _j < _len1; _j++) {
-            name = keys[_j];
-            if (!Conf["Deleted Mascots"].contains(name)) {
-              mascot = userMascots[name];
-              li = $.el('li', {
-                className: 'mascot',
-                innerHTML: "<div id='" + name + "' class='" + mascot.category + "'><img class=mascotimg src='" + (Array.isArray(mascot.image) ? (userThemes[Conf['theme']]['Dark Theme'] ? mascot.image[0] : mascot.image[1]) : mascot.image) + "'></div><div class='mascotmetadata'>  <p><span class='mascotname'>" + (name.replace(/_/g, " ")) + "</span></p>  <p><span class='mascotoptions'><a class=edit name='" + name + "' href='javascript:;'>Edit</a> / <a class=delete name='" + name + "' href='javascript:;'>Delete</a> / <a class=export name='" + name + "' href='javascript:;'>Export</a></span></p></div>  "
-              });
-              div = $("#" + name, li);
-              if (Conf[g.MASCOTSTRING].contains(name)) {
-                $.addClass(li, 'enabled');
-              }
-              $.on($('a.edit', li), 'click', function() {
-                MascotTools.dialog(this.name);
-                return Options.close();
-              });
-              $.on($('a.delete', li), 'click', function() {
-                var container, type, _k, _len2, _ref1;
-                container = this.parentElement.parentElement.parentElement.parentElement;
-                if (confirm("Are you sure you want to delete \"" + this.name + "\"?")) {
-                  _ref1 = ["Enabled Mascots", "Enabled Mascots sfw", "Enabled Mascots nsfw"];
-                  for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
-                    type = _ref1[_k];
-                    Conf[type].remove(this.name);
-                    $.set(type, Conf[type]);
+            for (_k = 0, _len2 = keys.length; _k < _len2; _k++) {
+              name = keys[_k];
+              if (Conf["Deleted Mascots"].contains(name)) {
+                mascot = userMascots[name];
+                li = $.el('li', {
+                  className: 'mascot',
+                  innerHTML: "  <div id='" + name + "' class='" + mascot.category + "'><img class=mascotimg src='" + (Array.isArray(mascot.image) ? (userThemes[Conf['theme']]['Dark Theme'] ? mascot.image[0] : mascot.image[1]) : mascot.image) + "'></div>  <div class='mascotmetadata'>    <p><span class='mascotname'>" + (name.replace(/_/g, " ")) + "</span></p>  </div>    "
+                });
+                div = $('div', li);
+                $.on(div, 'click', function() {
+                  var container;
+                  container = this.parentElement;
+                  if (confirm("Are you sure you want to undelete \"" + this.id + "\"?")) {
+                    Conf["Deleted Mascots"].remove(this.id);
+                    $.set("Deleted Mascots", Conf["Deleted Mascots"]);
+                    return $.rm(container);
                   }
-                  Conf["Deleted Mascots"].push(this.name);
-                  $.set("Deleted Mascots", Conf["Deleted Mascots"]);
-                  return $.rm(container);
-                }
-              });
-              $.on($('a.export', li), 'click', function() {
-                var exportMascot, exportedMascot;
-                exportMascot = userMascots[this.name];
-                exportMascot['Mascot'] = this.name;
-                exportedMascot = "data:application/json," + encodeURIComponent(JSON.stringify(exportMascot));
-                if (window.open(exportedMascot, "_blank")) {
-
-                } else if (confirm("Your popup blocker is preventing Appchan X from exporting this theme. Would you like to open the exported theme in this window?")) {
-                  return window.location(exportedMascot);
-                }
-              });
-              $.on(div, 'click', function() {
-                if (Conf[g.MASCOTSTRING].remove(this.id)) {
-                  $.rmClass(this.parentElement, 'enabled');
-                } else {
-                  $.addClass(this.parentElement, 'enabled');
-                  Conf[g.MASCOTSTRING].push(this.id);
-                }
-                return $.set("Enabled Mascots", Conf["Enabled Mascots"]);
-              });
-              if (MascotTools.categories.contains(mascot.category)) {
-                $.add(ul[mascot.category], li);
-              } else {
-                $.add(ul[MascotTools.categories[0]], li);
+                });
+                $.add(ul, li);
               }
             }
+            $.add(suboptions, ul);
+            batchmascots = $.el('div', {
+              id: "mascots_batch",
+              innerHTML: "<a href=\"javascript:;\" id=\"return\">Return</a>"
+            });
+            $.on($('#return', batchmascots), 'click', function() {
+              $.rm($("#mascotContainer", d.body));
+              return Options.mascotTab.dialog();
+            });
           }
-          batchmascots = $.el('div', {
-            id: "mascots_batch",
-            innerHTML: "  <a href=\"javascript:;\" id=clear>Clear All</a> /   <a href=\"javascript:;\" id=selectAll>Select All</a> /   <a href=\"javascript:;\" id=createNew>Add Mascot</a> /   <a href=\"javascript:;\" id=importMascot>Import Mascot</a><input id=importMascotButton type=file hidden> /   <a href=\"javascript:;\" id=undelete>Undelete Mascots</a>  "
-          });
-          $.on($('#clear', batchmascots), 'click', function() {
-            var enabledMascots, _k, _len2;
-            enabledMascots = JSON.parse(JSON.stringify(Conf[g.MASCOTSTRING]));
-            for (_k = 0, _len2 = enabledMascots.length; _k < _len2; _k++) {
-              name = enabledMascots[_k];
-              $.rmClass($.id(name).parentElement, 'enabled');
-              Conf[g.MASCOTSTRING].remove(name);
-            }
-            return $.set(g.MASCOTSTRING, Conf[g.MASCOTSTRING]);
-          });
-          $.on($('#selectAll', batchmascots), 'click', function() {
-            for (name in userMascots) {
-              mascot = userMascots[name];
-              if (!(Conf["Hidden Categories"].contains(mascot.category) || Conf[g.MASCOTSTRING].contains(name) || Conf["Deleted Mascots"].contains(name))) {
-                $.addClass($.id(name).parentElement, 'enabled');
-                Conf[g.MASCOTSTRING].push(name);
-              }
-            }
-            return $.set(g.MASCOTSTRING, Conf[g.MASCOTSTRING]);
-          });
-          $.on($('#createNew', batchmascots), 'click', function() {
-            MascotTools.dialog();
-            return Options.close();
-          });
-          $.on($("#importMascot", batchmascots), 'click', function() {
-            return this.nextSibling.click();
-          });
-          $.on($("#importMascotButton", batchmascots), 'change', function(evt) {
-            return MascotTools.importMascot(evt);
-          });
-          $.on($('#undelete', batchmascots), 'click', function() {
-            if (!(Conf["Deleted Mascots"].length > 0)) {
-              alert("No mascots have been deleted.");
-              return;
-            }
-            $.rm($("#mascotContainer", d.body));
-            return Options.mascotTab.dialog(Options.el, 'undelete');
-          });
-        } else {
-          ul = $.el("ul", {
-            className: "mascots",
-            id: category
-          });
-          for (_k = 0, _len2 = keys.length; _k < _len2; _k++) {
-            name = keys[_k];
-            if (Conf["Deleted Mascots"].contains(name)) {
-              mascot = userMascots[name];
-              li = $.el('li', {
-                className: 'mascot',
-                innerHTML: "<div id='" + name + "' class='" + mascot.category + "'><img class=mascotimg src='" + (Array.isArray(mascot.image) ? (userThemes[Conf['theme']]['Dark Theme'] ? mascot.image[0] : mascot.image[1]) : mascot.image) + "'></div><div class='mascotmetadata'>  <p><span class='mascotname'>" + (name.replace(/_/g, " ")) + "</span></p></div>  "
-              });
-              div = $('div', li);
-              $.on(div, 'click', function() {
-                var container;
-                container = this.parentElement;
-                if (confirm("Are you sure you want to undelete \"" + this.id + "\"?")) {
-                  Conf["Deleted Mascots"].remove(this.id);
-                  $.set("Deleted Mascots", Conf["Deleted Mascots"]);
-                  return $.rm(container);
-                }
-              });
-              $.add(ul, li);
-            }
-          }
-          $.add(suboptions, ul);
-          batchmascots = $.el('div', {
-            id: "mascots_batch",
-            innerHTML: "<a href=\"javascript:;\" id=\"return\">Return</a>"
-          });
-          $.on($('#return', batchmascots), 'click', function() {
-            $.rm($("#mascotContainer", d.body));
-            return Options.mascotTab.dialog();
-          });
+          $.add(parentdiv, suboptions);
+          $.add(parentdiv, batchmascots);
+          $.add(parentdiv, mascotHide);
+          Style.rice(parentdiv);
+          $.add($('#mascot_tab + div', dialog), parentdiv);
+          return Options.indicators(dialog);
+        } catch (err) {
+          return alert("AppChan X has experienced an error. You can help by sending this snippet to:\nhttps://github.com/zixaphir/appchan-x/issues\n\n" + Main.version + "\n" + window.location + "\n" + navigator.userAgent + "\n\n" + err + "\n\n" + mascot + "\n\n" + err.stack);
         }
-        $.add(parentdiv, suboptions);
-        $.add(parentdiv, batchmascots);
-        $.add(parentdiv, mascotHide);
-        Style.rice(parentdiv);
-        $.add($('#mascot_tab + div', dialog), parentdiv);
-        return Options.indicators(dialog);
       },
       toggle: function(el) {
         var category, mName, mascot, name, type, _i, _len, _ref;
