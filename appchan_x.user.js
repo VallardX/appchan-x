@@ -7002,7 +7002,7 @@
             className: "soundcloud",
             name: "soundcloud"
           });
-          $.ajax("//soundcloud.com/oembed?show_artwork=false&&maxwidth=500px&show_comments=false&format=json&url=" + (this.getAttribute('data-originalURL')) + "&color=" + (Style.colorToHex(Themes[Conf['theme']]['Background Color'])), {
+          $.ajax("//soundcloud.com/oembed?show_artwork=false&&maxwidth=500px&show_comments=false&format=json&url=" + (this.getAttribute('data-originalURL')) + "&color=" + (Style.color.toHex(Themes[Conf['theme']]['Background Color'])), {
             div: div,
             onloadend: function() {
               return this.div.innerHTML = JSON.parse(this.responseText).html;
@@ -9884,11 +9884,7 @@
           return null;
         }
       }
-      if (Conf['Mascot Position'] === 'bottom' || !(Conf['Mascot Position'] === "default" && Conf['Post Form Style'] === "fixed")) {
-        position = 0;
-      } else {
-        position = !g.REPLY || !!$('#postForm input[name=spoiler]') ? "21.1em" : "19.7em";
-      }
+      position = "" + (Conf['Mascot Position'] === 'bottom' || !(Conf['Mascot Position'] === "default" && Conf['Post Form Style'] === "fixed") ? 0 : 20.2 + (!g.REPLY || !!$('#postForm input[name=spoiler]') ? 1.4 : 0)) + "em";
       if (Conf['editMode']) {
         if (!(mascot = editMascot || (mascot = Mascots[Conf["mascot"]]))) {
           return;
@@ -10515,44 +10511,13 @@
         }
       }
     },
-    color: function(hex) {
+    color: function(color) {
+      var hex;
+      hex = this.toHex(color);
       this.hex = "#" + hex;
-      this.calc_rgb = function(hex) {
-        hex = parseInt(hex, 16);
-        return [(hex >> 16) & 0xFF, (hex >> 8) & 0xFF, hex & 0xFF];
-      };
-      this.private_rgb = this.calc_rgb(hex);
+      this.private_rgb = this.calc_rgb(color);
       this.rgb = this.private_rgb.join(",");
-      this.isLight = function() {
-        var rgb;
-        rgb = this.private_rgb;
-        return (rgb[0] + rgb[1] + rgb[2]) >= 400;
-      };
-      this.shiftRGB = function(shift, smart) {
-        var minmax, rgb;
-        minmax = function(base) {
-          return Math.min(Math.max(base, 0), 255);
-        };
-        rgb = this.private_rgb.slice(0);
-        shift = smart ? (this.isLight(rgb) ? -1 : 1) * Math.abs(shift) : shift;
-        return [minmax(rgb[0] + shift), minmax(rgb[1] + shift), minmax(rgb[2] + shift)].join(",");
-      };
       return this.hover = this.shiftRGB(16, true);
-    },
-    colorToHex: function(color) {
-      var digits, hex;
-      if (color.substr(0, 1) === '#') {
-        return color.slice(1, color.length);
-      }
-      if (digits = color.match(/(.*?)rgba?\((\d+), ?(\d+), ?(\d+)(.*?)\)/)) {
-        hex = ((parseInt(digits[2], 10) << 16) | (parseInt(digits[3], 10) << 8) | (parseInt(digits[4], 10))).toString(16);
-        while (hex.length < 6) {
-          hex = "0" + hex;
-        }
-        return hex;
-      } else {
-        return false;
-      }
     },
     jsColorCSS: function() {
       return ".jscBox {\n  width: 251px;\n  height: 155px;\n}\n.jscBoxB,\n.jscPadB,\n.jscPadM,\n.jscSldB,\n.jscSldM,\n.jscBtn {\n  position: absolute;\n  clear: both;\n}\n.jscBoxB {\n  left: 320px;\n  bottom: 20px;\n  z-index: 1000;\n  border: 1px solid;\n  border-color: ThreeDHighlight ThreeDShadow ThreeDShadow ThreeDHighlight;\n  background: ThreeDFace;\n}\n.jscPad {\n  width: 181px;\n  height: 101px;\n  background-image: " + Style.agent + "linear-gradient(rgba(255,255,255,0), rgba(255,255,255,1)), " + Style.agent + "linear-gradient(left, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);\n  background-repeat: no-repeat;\n  background-position: 0 0;\n}\n.jscPadB {\n  left: 10px; \n  top: 10px; \n  border: 1px solid; \n  border-color: ThreeDShadow ThreeDHighlight ThreeDHighlight ThreeDShadow;\n}\n.jscPadM {\n  left: 0;\n  top: 0;\n  width: 200px;\n  height: 121px;\n  cursor: crosshair;\n  background-image: url('data:image/gif;base64,R0lGODlhDwAPAKEBAAAAAP///////////yH5BAEKAAIALAAAAAAPAA8AAAIklB8Qx53b4otSUWcvyiz4/4AeQJbmKY4p1HHapBlwPL/uVRsFADs=');\n  background-repeat: no-repeat;\n}\n.jscSld {\n  width: 16px;\n  height: 101px;\n  background-image: " + Style.agent + "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,1));\n}\n.jscSldB {\n  right: 10px;\n  top: 10px;\n  border: 1px solid;\n  border-color: ThreeDShadow ThreeDHighlight ThreeDHighlight ThreeDShadow;\n}\n.jscSldM {\n  right: 0;\n  top: 0;\n  width: 36px;\n  height: 121px;\n  cursor: pointer;\n  background-image: url('data:image/gif;base64,R0lGODlhBwALAKECAAAAAP///6g8eKg8eCH5BAEKAAIALAAAAAAHAAsAAAITTIQYcLnsgGxvijrxqdQq6DRJAQA7');\n  background-repeat: no-repeat;\n}\n.jscBtn {\n  right: 10px;\n  bottom: 10px;\n  padding: 0 15px;\n  height: 18px;\n  border: 1px solid;\n  border-color: ThreeDHighlight ThreeDShadow ThreeDShadow ThreeDHighlight;\n  color: ButtonText;\n  text-align: center;\n  cursor: pointer;\n}\n.jscBtnS {\n  line-height: 10px;\n}";
@@ -10741,16 +10706,16 @@
         css += ".replyContainer:not(.hidden):nth-of-type(2n+1) .post {\n  background-image: " + Style.agent + "linear-gradient(" + (Style.lightTheme ? "rgba(0,0,0,0.05), rgba(0,0,0,0.05)" : "rgba(255,255,255,0.02), rgba(255,255,255,0.02)") + ");\n}\n";
       }
       if (_conf["Color Reply Headings"]) {
-        css += ".postInfo {\n  background: " + ((replyHeading = new Style.color(Style.colorToHex(theme["Reply Background"]))) ? "rgb(" + (replyHeading.shiftRGB(16, true)) + ")" : "rgba(0,0,0,0.1)") + ";\n}\n";
+        css += ".postInfo {\n  background: " + ((replyHeading = new Style.color(theme["Reply Background"])) ? "rgb(" + (replyHeading.shiftRGB(16, true)) + ")" : "rgba(0,0,0,0.1)") + ";\n}\n";
       }
       if (_conf["Color File Info"]) {
-        css += ".file {\n  background: " + ((fileHeading = new Style.color(Style.colorToHex(theme["Reply Background"]))) ? "rgb(" + (fileHeading.shiftRGB(8, true)) + ")" : "rgba(0,0,0,0.1)") + ";\n}\n";
+        css += ".file {\n  background: " + ((fileHeading = new Style.color(theme["Reply Background"])) ? "rgb(" + (fileHeading.shiftRGB(8, true)) + ")" : "rgba(0,0,0,0.1)") + ";\n}\n";
       }
       if (_conf["OP Background"]) {
         css += ".op.post {\n  background: " + theme["Reply Background"] + ";\n  border: 1px solid " + theme["Reply Border"] + ";\n}\n.op.post:target\n.op.post.highlight {\n  background: " + theme["Highlighted Reply Background"] + ";\n  border: 1px solid " + theme["Highlighted Reply Border"] + ";\n}\n";
       }
       if (_conf["4chan SS Sidebar"]) {
-        background = new Style.color(Style.colorToHex(backgroundC));
+        background = new Style.color(backgroundC);
         css += "body::before {\n  background: none repeat scroll 0% 0% rgba(" + (background.shiftRGB(-18)) + ", 0.8);\n  border-" + Style.sidebarLocation[1] + ": 2px solid " + backgroundC + ";\n  box-shadow:\n    " + (_conf["Sidebar Location"] === "right" ? "inset" : "") + "  1px 0 0 " + theme["Thread Wrapper Border"] + ",\n    " + (_conf["Sidebar Location"] === "left" ? "inset" : "") + " -1px 0 0 " + theme["Thread Wrapper Border"] + ";\n}\n";
       }
       css += {
@@ -10767,6 +10732,42 @@
       return css;
     }
   };
+
+  $.extend(Style.color, {
+    toHex: function(color) {
+      var digits, hex;
+      if (color.substr(0, 1) === '#') {
+        return color.slice(1, color.length);
+      }
+      if (digits = color.match(/(.*?)rgba?\((\d+), ?(\d+), ?(\d+)(.*?)\)/)) {
+        hex = ((parseInt(digits[2], 10) << 16) | (parseInt(digits[3], 10) << 8) | (parseInt(digits[4], 10))).toString(16);
+        while (hex.length < 6) {
+          hex = "0" + hex;
+        }
+      } else {
+        hex = "000000";
+      }
+      return hex;
+    },
+    calc_rgb: function(hex) {
+      hex = parseInt(hex, 16);
+      return [(hex >> 16) & 0xFF, (hex >> 8) & 0xFF, hex & 0xFF];
+    },
+    isLight: function() {
+      var rgb;
+      rgb = this.private_rgb;
+      return (rgb[0] + rgb[1] + rgb[2]) >= 400;
+    },
+    shiftRGB: function(shift, smart) {
+      var minmax, rgb;
+      minmax = function(base) {
+        return Math.min(Math.max(base, 0), 255);
+      };
+      rgb = this.private_rgb.slice(0);
+      shift = smart ? (this.isLight(rgb) ? -1 : 1) * Math.abs(shift) : shift;
+      return [minmax(rgb[0] + shift), minmax(rgb[1] + shift), minmax(rgb[2] + shift)].join(",");
+    }
+  });
 
   Main = {
     init: function() {
@@ -10872,10 +10873,11 @@
       settings.disableAll = true;
       localStorage.setItem('4chan-settings', JSON.stringify(settings));
       if (g.CATALOG) {
-        return $.ready(Main.catalog);
+        $.ready(Main.catalog);
       } else {
-        return Main.features();
+        Main.features();
       }
+      return $.log(Style.color.toHex('rgb(255,0,255)'));
     },
     catalog: function() {
       var _conf;

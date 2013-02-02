@@ -2580,7 +2580,7 @@ Linkify =
           className: "soundcloud"
           name:      "soundcloud"
         $.ajax(
-          "//soundcloud.com/oembed?show_artwork=false&&maxwidth=500px&show_comments=false&format=json&url=#{@getAttribute 'data-originalURL'}&color=#{Style.colorToHex Themes[Conf['theme']]['Background Color']}"
+          "//soundcloud.com/oembed?show_artwork=false&&maxwidth=500px&show_comments=false&format=json&url=#{@getAttribute 'data-originalURL'}&color=#{Style.color.toHex Themes[Conf['theme']]['Background Color']}"
           div: div
           onloadend: ->
             @div.innerHTML = JSON.parse(@responseText).html

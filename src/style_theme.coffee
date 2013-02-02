@@ -443,13 +443,13 @@ a[style="cursor: pointer; float: right;"]::after,
     if _conf["Color Reply Headings"]
       css += """
 .postInfo {
-  background: #{if (replyHeading = new Style.color Style.colorToHex theme["Reply Background"]) then "rgb(" + (replyHeading.shiftRGB 16, true) + ")" else "rgba(0,0,0,0.1)"};
+  background: #{if (replyHeading = new Style.color theme["Reply Background"]) then "rgb(" + (replyHeading.shiftRGB 16, true) + ")" else "rgba(0,0,0,0.1)"};
 }\n"""
 
     if _conf["Color File Info"]
       css += """
 .file {
-  background: #{if (fileHeading = new Style.color Style.colorToHex theme["Reply Background"]) then "rgb(" + (fileHeading.shiftRGB 8, true) + ")" else "rgba(0,0,0,0.1)"};
+  background: #{if (fileHeading = new Style.color theme["Reply Background"]) then "rgb(" + (fileHeading.shiftRGB 8, true) + ")" else "rgba(0,0,0,0.1)"};
 }\n
 """
     if _conf["OP Background"]
@@ -465,7 +465,7 @@ a[style="cursor: pointer; float: right;"]::after,
 }\n
 """
     if _conf["4chan SS Sidebar"]
-      background = new Style.color Style.colorToHex backgroundC
+      background = new Style.color backgroundC
       css += """
 body::before {
   background: none repeat scroll 0% 0% rgba(#{background.shiftRGB -18}, 0.8);

@@ -30,6 +30,7 @@ module.exports = function(grunt) {
           'src/iconpositions.coffee',
           'src/style.coffee',
           'src/style_theme.coffee',
+          'src/appchan_ex.coffee',
           '<file_template:src/main.coffee>',
           'src/exec.coffee'
         ],
