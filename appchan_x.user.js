@@ -19,7 +19,7 @@
 // ==/UserScript==
 
 /*
- * appchan-x - Version 1.2.6 - 2013-04-11
+ * appchan-x - Version 1.2.6 - 2013-04-13
  *
  * Licensed under the MIT license.
  * https://github.com/zixaphir/appchan-x/blob/master/LICENSE
@@ -2821,7 +2821,7 @@
     archiver: {
       'Foolz': {
         base: '//archive.foolz.us',
-        boards: ['a', 'co', 'jp', 'm', 'q', 'sp', 'tg', 'tv', 'v', 'vg', 'wsg', 'dev', 'foolz'],
+        boards: ['a', 'co', 'gd', 'jp', 'm', 'q', 'sp', 'tg', 'tv', 'v', 'vg', 'vp', 'vr', 'wsg', 'dev', 'foolz'],
         type: 'foolfuuka'
       },
       'NSFWFoolz': {
@@ -2831,23 +2831,23 @@
       },
       'TheDarkCave': {
         base: 'http://archive.thedarkcave.org',
-        boards: ['c', 'int', 'po'],
+        boards: ['c', 'int', 'out', 'po'],
         type: 'foolfuuka'
       },
       'Warosu': {
         base: '//fuuka.warosu.org',
-        boards: ['cgl', 'ck', 'jp', 'lit', 'q', 'tg'],
+        boards: ['cgl', 'ck', 'fa', 'jp', 'lit', 'q', 's4s', 'tg', 'vr'],
+        type: 'fuuka'
+      },
+      'InstallGentoo': {
+        base: '//archive.installgentoo.net',
+        boards: ['diy', 'g', 'sci'],
         type: 'fuuka'
       },
       'RebeccaBlackTech': {
         base: '//rbt.asia',
         boards: ['cgl', 'g', 'mu', 'w'],
         type: 'fuuka_mail'
-      },
-      'InstallGentoo': {
-        base: '//archive.installgentoo.net',
-        boards: ['diy', 'g', 'sci'],
-        type: 'fuuka'
       },
       'Heinessen': {
         base: 'http://archive.heinessen.com',
@@ -2900,7 +2900,7 @@
       if (postID) {
         postID = postID.match(/\d+/)[0];
       }
-      return base + "/" + board + "/" + (threadID ? "thread/" + threadID : "post/" + postID) + (threadID && postID ? "#" + (archiver === 'foolfuuka' ? 'p' : '') + postID : "");
+      return base + "/" + board + "/" + (threadID ? "thread/" + threadID : "post/" + postID) + (threadID && postID ? "#" + (archiver === 'InstallGentoo' ? 'p' : '') + postID : "");
     }
   };
 
